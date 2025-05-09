@@ -5,6 +5,8 @@ import { otpRoutes } from "../modules/otp/otp.routes";
 import { settingsRoutes } from "../modules/setting/setting.route";
 import { notificationRoutes } from "../modules/notifications/notifications.route";
 import { categoryRoutes } from "../modules/category/category.route";
+import { eventRoutes } from "../modules/event/event.route";
+import { reviewRoutes } from "../modules/review/review.route";
 
 const router = Router();
 
@@ -33,6 +35,15 @@ const moduleRoutes = [
     path: "/category",
     route: categoryRoutes
  },
+ {
+  path: "/event",
+  route: eventRoutes
+},
+
+{
+  path: "/review",
+  route: reviewRoutes
+},
 ];
 
 moduleRoutes.forEach((route) => router.use(route.path, route.route));

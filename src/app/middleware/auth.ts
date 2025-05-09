@@ -1,6 +1,4 @@
 import httpStatus from 'http-status';
-import jwt from 'jsonwebtoken';
-import { JwtPayload } from 'jsonwebtoken';
 import AppError from '../error/AppError';
 import catchAsync from '../utils/catchAsync';
 import { verifyToken } from '../utils/tokenManage';
@@ -10,6 +8,7 @@ import { User } from '../modules/user/user.models';
 const auth = (...userRoles: string[]) => {
   return catchAsync(async (req, res, next) => {
     const token: any = req.headers?.authorization || req?.headers?.token;
+
     if (!token) {
       throw new AppError(httpStatus.UNAUTHORIZED, 'you are not authorized!');
     }
@@ -18,6 +17,7 @@ const auth = (...userRoles: string[]) => {
       token,
       access_secret: config.jwt_access_secret as string,
     });
+
      
     const { role, userId } = decodeData;
 
@@ -27,6 +27,7 @@ const auth = (...userRoles: string[]) => {
     }
 
     if (userRoles && !userRoles.includes(role)) {
+      console.log("execute this line")
       throw new AppError(httpStatus.UNAUTHORIZED, 'You are not authorized');
     }
     req.user = decodeData;

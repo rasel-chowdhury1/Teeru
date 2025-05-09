@@ -6,7 +6,7 @@ export const reviewRoutes = Router();
 
 reviewRoutes
  .post(
-    "add",
+    "/add",
     auth("user"),
     ReviewController.createReview
  )
@@ -14,5 +14,20 @@ reviewRoutes
 .get(
     "/",
     auth("admin"),
-    ReviewController
+    ReviewController.getAllReviews
 )
+
+.get(
+    "/:id",
+    auth("admin"),
+    ReviewController.getSpecificReview
+)
+
+
+
+
+  .delete(
+    '/:id',
+    auth('admin'),
+    ReviewController.softDeleteReview
+  ); // Soft delete event
