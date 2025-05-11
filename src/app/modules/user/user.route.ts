@@ -23,7 +23,13 @@ userRoutes
     userController.userCreateVarification,
   )
 
+  .post(
+    "/addCard",
+    auth("user"),
+    userController.addCardToUser
+  )
 
+  .get("/myCards", auth('user'), userController.getMyCards)
 
   .get('/my-profile', auth('user', 'admin'), userController.getMyProfile)
 

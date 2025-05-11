@@ -3,6 +3,19 @@ import { Error, model, Schema } from 'mongoose';
 import config from '../../config';
 import { TUser, UserModel } from './user.interface';
 
+// ✅ Card schema first
+const cardSchema = new Schema(
+  {
+    cardHolderName: { type: String, required: true },
+    cardNumber: { type: String, required: true },
+    expiryMonth: { type: String, required: true },
+    expiryYear: { type: String, required: true },
+    cvv: { type: String, required: true },
+    cardBrand: { type: String, default: '' },
+  },
+  { _id: false }
+);
+
 const userSchema = new Schema<TUser>(
   {
     fullName: {
@@ -51,15 +64,10 @@ const userSchema = new Schema<TUser>(
       type: String,
       default: '',
     },
-    // about: {
-    //   type: String,
-    //   default: '',
-    // },
-
-    // dateOfBirth: {
-    //   type: Date, // Added date of birth
-    //   required: false, // Optional field
-    // },
+    cards: {
+      type: [cardSchema],
+      default: [],
+    },
   },
   {
     timestamps: true,

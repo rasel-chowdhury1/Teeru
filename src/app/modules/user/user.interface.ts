@@ -1,5 +1,15 @@
 import { Model } from 'mongoose';
 
+// user.interface.ts
+export type TCard = {
+  cardHolderName: string;
+  cardNumber: string;
+  expiryMonth: string;
+  expiryYear: string;
+  cvv: string;
+  cardBrand?: string;
+};
+
 export interface TUserCreate {
   fullName?: string;
   email: string;
@@ -14,6 +24,7 @@ export interface TUserCreate {
   role: string;
   phone: string;
   gender: 'male' | 'female' | 'other';
+    cards?: TCard[]; // <- Add this line
 }
 
 export interface TUser extends TUserCreate {

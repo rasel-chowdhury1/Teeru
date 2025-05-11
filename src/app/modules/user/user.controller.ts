@@ -48,6 +48,33 @@ const completedProfile = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const addCardToUser = catchAsync(async (req: Request, res: Response) => {
+  const { userId } = req.user;  // Get the userId from the request (assumes user is authenticated)
+  const newCard = req.body;      // Get the new card data from the request body
+
+  // Call the service function to handle the logic for adding the card
+  const result = await userService.addUniqueCardToUser(userId, newCard);
+
+  // Send the response back to the client
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Card added successfully',
+    data: result,
+  });
+});
+
+const getMyCards = catchAsync(async (req: Request, res: Response) => {
+  console.log('get my profile ->>> ', req?.user?.userId);
+  const result = await userService.getMyCards(req?.user?.userId);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'User card fetched successfully',
+    data: result,
+  });
+});
+
 // rest >...............
 
 const getAllUsers = catchAsync(async (req, res) => {
@@ -187,6 +214,8 @@ export const userController = {
   createUser,
   userCreateVarification,
   completedProfile,
+  addCardToUser,
+  getMyCards,
   getUserById,
   getMyProfile,
   getAdminProfile,

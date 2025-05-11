@@ -10,7 +10,7 @@ import Notification from '../notifications/notifications.model';
 import { TPurposeType } from '../otp/otp.interface';
 import { otpServices } from '../otp/otp.service';
 import { generateOptAndExpireTime } from '../otp/otp.utils';
-import { DeleteAccountPayload, TUser, TUserCreate } from './user.interface';
+import { DeleteAccountPayload, TCard, TUser, TUserCreate } from './user.interface';
 import { User } from './user.models';
 
 export type IFilter = {
@@ -221,6 +221,47 @@ const updateUser = async (id: string, payload: Partial<TUser>) => {
   return user;
 };
 
+
+const addUniqueCardToUser = async (userId: string, newCard: TCard) => {
+  const user = await User.findById(userId);
+
+  if (!user) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'User not found');
+  }
+
+  // Ensure `cards` is always an array (even if it's undefined or null)
+  const cards = user.cards ?? [];
+
+  // Check if the card number already exists
+  const isCardExist = cards.some(
+    card => card.cardNumber === newCard.cardNumber
+  );
+
+  if (isCardExist) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'Card number already exists');
+  }
+
+  // If not exist, add the card
+  cards.push(newCard);
+  user.cards = cards;
+  await user.save();
+
+  return user;
+};
+
+const getMyCards = async (id: string) => {
+ 
+
+  const userData = await User.findById(id)
+
+  if (!userData) {
+    throw new AppError(httpStatus.NOT_FOUND, 'User not found');
+  }
+
+
+
+  return userData.cards;
+};
 // ............................rest
 
 const getAllUserQuery = async (
@@ -409,6 +450,8 @@ export const userService = {
   createUserToken,
   otpVerifyAndCreateUser,
   completedUser,
+  addUniqueCardToUser,
+  getMyCards,
   getMyProfile,
   getAdminProfile,
   getUserById,
