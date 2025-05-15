@@ -1,6 +1,6 @@
 
 
-let adminData: {} | null = null;
+let adminData : any;
 
 export const setAdminData = (data: {}) => {
   adminData = data;
