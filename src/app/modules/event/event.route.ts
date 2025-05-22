@@ -18,6 +18,17 @@ eventRoutes
   ) // Get all events
 
   .get(
+    "/upcoming",
+    auth("user"),
+    eventController.getUpcomingEventOfSpecificUser
+  )
+
+  .get(
+    "/speceficCategoryEvent/:categoryId",
+    eventController.getSpecificCategoryEvents
+  )
+
+  .get(
     '/:id',
     eventController.getSpecificEvent
   ) // Get event by id

@@ -19,16 +19,13 @@ const paymentSchema: Schema = new Schema<IPayment>(
     transactionId: {
       type: String,
       required: true,
+      unique: true,
     },
     paymentMethod: {
       type: String,
-      enum: ["paypal", "stripe","Stripe", "Card", "Bank"],
+      enum: ["Wave","OrangeMoney","Apple","Google", "Card", "Bank","stripe",],
       required: true,
     },
-    ticket: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Ticket",
-    }
   },
   {
     timestamps: true,
