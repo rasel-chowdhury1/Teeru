@@ -77,14 +77,32 @@ const userSchema = new Schema<TUser>(
   },
 );
 
+// userSchema.pre('save', async function (next) {
+//   // eslint-disable-next-line @typescript-eslint/no-this-alias
+//   const user = this;
+//   user.password = await bcrypt.hash(
+//     user.password,
+//     Number(config.bcrypt_salt_rounds),
+//   );
+//   next();
+// });
+
 userSchema.pre('save', async function (next) {
-  // eslint-disable-next-line @typescript-eslint/no-this-alias
   const user = this;
-  user.password = await bcrypt.hash(
-    user.password,
-    Number(config.bcrypt_salt_rounds),
-  );
-  next();
+
+  if (!user.isModified('password')) {
+    return next();
+  }
+
+  try {
+    user.password = await bcrypt.hash(
+      user.password,
+      Number(config.bcrypt_salt_rounds)
+    );
+    next();
+  } catch (err) {
+    next(err as Error);
+  }
 });
 
 // set '' after saving password

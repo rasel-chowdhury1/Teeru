@@ -241,6 +241,8 @@ const addUniqueCardToUser = async (userId: string, newCard: TCard) => {
     throw new AppError(httpStatus.BAD_REQUEST, 'Card number already exists');
   }
 
+
+  console.log({newCard})
   // If not exist, add the card
   cards.push(newCard);
   user.cards = cards;

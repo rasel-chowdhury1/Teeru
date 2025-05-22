@@ -52,6 +52,7 @@ const addCardToUser = catchAsync(async (req: Request, res: Response) => {
   const { userId } = req.user;  // Get the userId from the request (assumes user is authenticated)
   const newCard = req.body;      // Get the new card data from the request body
 
+  console.log("new card data -->>> ",{newCard})
   // Call the service function to handle the logic for adding the card
   const result = await userService.addUniqueCardToUser(userId, newCard);
 
