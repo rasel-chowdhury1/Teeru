@@ -20,7 +20,7 @@ const updateEvent = async (id: string, data: Partial<IEvent>) => {
 };
 
 const getAllEvents = async (query: Record<string, unknown>) => {
-  const eventQuery = new QueryBuilder(Event.find({ isDeleted: false }), query)
+  const eventQuery = new QueryBuilder(Event.find({ isDeleted: false }).populate("category"), query)
     .search([]) // Add searchable fields if needed
     .filter()
     .sort()
@@ -33,7 +33,7 @@ const getAllEvents = async (query: Record<string, unknown>) => {
 };
 
 const getSpecificCategoryEvents = async (categoryId: string,query: Record<string, unknown>) => {
-  const eventQuery = new QueryBuilder(Event.find({ isDeleted: false, category: categoryId }), query)
+  const eventQuery = new QueryBuilder(Event.find({ isDeleted: false, category: categoryId }).populate("category"), query)
     .search([]) // Add searchable fields if needed
     .filter()
     .sort()
@@ -46,7 +46,7 @@ const getSpecificCategoryEvents = async (categoryId: string,query: Record<string
 };
 
 const getSpecificEvent = async (id: string) => {
-  const event = await Event.findById(id);
+  const event = await Event.findById(id).populate("category");
   if (!event || event.isDeleted) {
     throw new AppError(httpStatus.NOT_FOUND, 'Event not found');
   }
@@ -60,6 +60,7 @@ const getUpcomingEventOfSpecificUser = async (userId: string) => {
     .populate({
       path: 'eventId',
       match: { date: { $gte: now } }, // Adjust field name to your Event model
+      populate: { path: 'category' }
     })
     .lean();
 
