@@ -188,13 +188,13 @@ export { io };
 export const emitNotification = async ({
   userId,
   receiverId,
-  userMsg,
+  message,
   type
 }: {
-  userId: mongoose.Types.ObjectId;
+  userId: any;
   receiverId: mongoose.Types.ObjectId;
-  userMsg?: {image: string, text: string, photos?: string[]};
-  type?: string;
+  message: string;
+  type: string;
 }): Promise<void> => {
 
   if (!io) {
@@ -215,7 +215,7 @@ export const emitNotification = async ({
   console.log("connected ---->>> ", connectedUsers)
 
   // Notify the specific user
-  if (userMsg && userSocket) {
+  if (message && userSocket) {
 
     console.log()
     io.to(userSocket.socketID).emit(`notification`, {
@@ -231,7 +231,7 @@ export const emitNotification = async ({
    const newNotification = {
     userId, // Ensure that userId is of type mongoose.Types.ObjectId
     receiverId, // Ensure that receiverId is of type mongoose.Types.ObjectId
-    message: userMsg,
+    message: message,
     type, // Use the provided type (default to "FollowRequest")
     isRead: false, // Set to false since the notification is unread initially
     timestamp: new Date(), // Timestamp of when the notification is created

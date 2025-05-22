@@ -15,17 +15,12 @@ const NotificationSchema = new Schema<INotification>(
       required: true,
     },
     message: {
-      type: {
-        fullName: {type: String, default: false},
-        image: { type: String, default: "" }, // Store the image URL or path
-        text: { type: String, required: true },  // Store additional data
-        photos: { type: [String], default: [] }, // Optional array of photo URLs or paths
-      },
+      type: String,
       required: true, // The message object itself is required
     },
     type: {
       type: String,
-      enum: ["interested", "notInterested","SendFollow", "AcceptFollow", "DeclineFollow", "Accepted", "Rejected", "added"],
+      enum: [ "Join" , "buyTicket"],
       required: true,
     },
     isRead: {

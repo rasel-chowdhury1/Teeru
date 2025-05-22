@@ -52,7 +52,9 @@ userRoutes
     userController.updateMyProfile,
   )
 
-  .patch('/block/:id', auth('admin'), userController.blockedUser)
+  .patch('/block/:id', auth('admin'), userController.blockUser)
+  
+  .patch('/unblock/:id', auth('admin'), userController.unblockUser)
 
   .delete('/delete-my-account', auth('user'), userController.deleteMyAccount);
 

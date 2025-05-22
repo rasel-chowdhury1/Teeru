@@ -14,6 +14,7 @@ export type TTicket = {
 
 
 export type BuyTicketInput = {
+  fullName: string;
   userId: mongoose.Types.ObjectId;
   eventId: mongoose.Types.ObjectId;
   amount: number;

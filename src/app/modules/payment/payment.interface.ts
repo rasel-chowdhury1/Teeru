@@ -10,5 +10,5 @@ export interface IPayment extends Document {
   paymentStatus: 'pending' | 'completed';
   transactionId: string;
   paymentMethod: 'paypal' | 'stripe' | 'Stripe' | 'Card' | 'Bank';
-  // ticket: Schema.Types.ObjectId | null; // Only set for subscription payments
+  ticketId: Schema.Types.ObjectId | null; // Only set for subscription payments
 }

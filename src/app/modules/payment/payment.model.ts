@@ -26,6 +26,11 @@ const paymentSchema: Schema = new Schema<IPayment>(
       enum: ["Wave","OrangeMoney","Apple","Google", "Card", "Bank","stripe",],
       required: true,
     },
+    ticketId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Ticket",
+      // default: null
+    },
   },
   {
     timestamps: true,

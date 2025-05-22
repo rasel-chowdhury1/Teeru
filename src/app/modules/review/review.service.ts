@@ -13,7 +13,7 @@ const createReview = async (data: IReview) => {
   };
 
   const getAllReviews = async(query: Record<string, unknown>) => {
-    const reviewQuery = new QueryBuilder(Review.find({ isDeleted: false }), query)
+    const reviewQuery = new QueryBuilder(Review.find({ isDeleted: false }).populate("userId", 'fullName email'), query)
       .search([]) // Add searchable fields if needed
       .filter()
       .sort()

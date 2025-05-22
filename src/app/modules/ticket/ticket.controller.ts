@@ -5,6 +5,7 @@ import { ticketServices } from "./ticket.service";
 import httpStatus from 'http-status';
 
 const buyTicket = catchAsync(async (req: Request, res: Response) => {
+      req.body.fullName = req.user.fullName;
       req.body.userId = req.user.userId;
   
       console.log(req.body)

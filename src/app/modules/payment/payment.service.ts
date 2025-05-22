@@ -15,7 +15,13 @@ const getPayments = async (filter: Record<string, any>, options: { page: number;
     .skip(skip)
     .limit(limit)
     .populate('user_id', 'fullName email') // Populate user details
-    .populate('guide_id', 'fullName email') // Populate guide details
+    .populate({
+    path: 'ticketId',
+    populate: {
+      path: 'eventId',
+      select: 'name date location', // Select fields you want from Event
+    },
+  })
     .sort(defaultSort);
 
   const totalResults = await Payment.countDocuments(filter);
@@ -23,7 +29,7 @@ const getPayments = async (filter: Record<string, any>, options: { page: number;
 
   const pagination = { currentPage: page, limit, totalResults, totalPages };
 
-  return { payments, pagination };
+  return {  pagination ,payments};
 };
 
 // Create a new payment

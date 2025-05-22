@@ -2,6 +2,7 @@
 import AppError from '../../error/AppError';
 import httpStatus from 'http-status';
 import Notification from './notifications.model';
+import QueryBuilder from '../../builder/QueryBuilder';
 
 interface ICreateNotificationProps {
   userId: string;
@@ -31,9 +32,18 @@ const getAllNotifications = async (query: Record<string, unknown>) => {
   return notifications;
 };
 
-const getMyNotifications = async (userId: string) => {
-  const notifications = await Notification.find({ receiverId: userId }).sort({ createdAt: -1 });
-  return notifications;
+const getMyNotifications = async (userId: string, query: any) => {
+
+  const notificationQuery = new QueryBuilder(Notification.find({ receiverId: userId }), query)
+    .search([]) // Add searchable fields if needed
+    .filter()
+    .sort()
+    .paginate()
+    .fields();
+
+  const result = await notificationQuery.modelQuery;
+  const meta = await notificationQuery.countTotal();
+  return { meta, result };
 };
 
 const markAsRead = async (id: string) => {

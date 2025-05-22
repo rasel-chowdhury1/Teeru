@@ -12,6 +12,10 @@ import { otpServices } from '../otp/otp.service';
 import { generateOptAndExpireTime } from '../otp/otp.utils';
 import { DeleteAccountPayload, TCard, TUser, TUserCreate } from './user.interface';
 import { User } from './user.models';
+import Payment from '../payment/payment.model';
+import { monthNameSwitch } from './user.utils';
+import { getAdminId } from '../../DB/adminStore';
+import { emitNotification } from '../../../socketIo';
 
 export type IFilter = {
   searchTerm?: string;
@@ -152,6 +156,22 @@ const otpVerifyAndCreateUser = async ({
     throw new AppError(httpStatus.BAD_REQUEST, 'User creation failed');
   }
 
+
+  const adminId = getAdminId()
+    const newNotification = new Notification({
+    userId: user?._id, // Ensure that userId is of type mongoose.Types.ObjectId
+    receiverId: adminId, // Ensure that receiverId is of type mongoose.Types.ObjectId
+    message: "New user has joined in your application",
+    type: 'Join', // Use the provided type (default to "FollowRequest")
+    isRead: false, // Set to false since the notification is unread initially
+    timestamp: new Date(), // Timestamp of when the notification is created
+  });
+
+  emitNotification( {userId: user?._id, 
+    receiverId: adminId, 
+    message: "New user has joined in your application",
+    type: 'Join',})
+
   const jwtPayload: {
     userId: string;
     role: string;
@@ -287,63 +307,176 @@ const getAllUserCount = async () => {
   return allUserCount;
 };
 
-const getUsersOverview = async (userId: string, year: any) => {
-  try {
-    // Fetch total user count
-    const totalUsers = await User.countDocuments();
+// const getUsersOverview = async (userId: string, year: any) => {
+//   try {
+//     // Fetch total user count
+//     const totalUsers = await User.countDocuments();
 
-    // Fetch user growth over time for the specified year (monthly count with month name)
-    const userOverview = await User.aggregate([
-      {
-        $match: {
-          createdAt: {
-            $gte: new Date(`${year}-01-01`),
-            $lt: new Date(`${year + 1}-01-01`),
-          }, // Filter by year
-        },
-      },
-      {
-        $group: {
-          _id: { $month: '$createdAt' }, // Group by month of the 'createdAt' date
-          count: { $sum: 1 },
-        },
-      },
-      {
-        $project: {
-          _id: 1,
-          count: 1,
-          monthName: {
-            $switch: {
-              branches: [
-                { case: { $eq: ['$_id', 1] }, then: 'January' },
-                { case: { $eq: ['$_id', 2] }, then: 'February' },
-                { case: { $eq: ['$_id', 3] }, then: 'March' },
-                { case: { $eq: ['$_id', 4] }, then: 'April' },
-                { case: { $eq: ['$_id', 5] }, then: 'May' },
-                { case: { $eq: ['$_id', 6] }, then: 'June' },
-                { case: { $eq: ['$_id', 7] }, then: 'July' },
-                { case: { $eq: ['$_id', 8] }, then: 'August' },
-                { case: { $eq: ['$_id', 9] }, then: 'September' },
-                { case: { $eq: ['$_id', 10] }, then: 'October' },
-                { case: { $eq: ['$_id', 11] }, then: 'November' },
-                { case: { $eq: ['$_id', 12] }, then: 'December' },
-              ],
-              default: 'Unknown', // Default value in case month is not valid
-            },
-          },
-        },
-      },
-      { $sort: { _id: 1 } }, // Sort by month (ascending)
+//         const totalEarningsResult = await Payment.aggregate([
+//       {
+//         $group: {
+//           _id: null,
+//           totalAmount: { $sum: '$amount' },
+//         },
+//       },
+//     ]);
+
+//     const totalEarnings = totalEarningsResult.length > 0 ? totalEarningsResult[0].totalAmount : 0;
+
+
+//     // Fetch user growth over time for the specified year (monthly count with month name)
+//     const userOverview = await User.aggregate([
+//       {
+//         $match: {
+//           createdAt: {
+//             $gte: new Date(`${year}-01-01`),
+//             $lt: new Date(`${year + 1}-01-01`),
+//           }, // Filter by year
+//         },
+//       },
+//       {
+//         $group: {
+//           _id: { $month: '$createdAt' }, // Group by month of the 'createdAt' date
+//           count: { $sum: 1 },
+//         },
+//       },
+//       {
+//         $project: {
+//           _id: 1,
+//           count: 1,
+//           monthName: {
+//             $switch: {
+//               branches: [
+//                 { case: { $eq: ['$_id', 1] }, then: 'January' },
+//                 { case: { $eq: ['$_id', 2] }, then: 'February' },
+//                 { case: { $eq: ['$_id', 3] }, then: 'March' },
+//                 { case: { $eq: ['$_id', 4] }, then: 'April' },
+//                 { case: { $eq: ['$_id', 5] }, then: 'May' },
+//                 { case: { $eq: ['$_id', 6] }, then: 'June' },
+//                 { case: { $eq: ['$_id', 7] }, then: 'July' },
+//                 { case: { $eq: ['$_id', 8] }, then: 'August' },
+//                 { case: { $eq: ['$_id', 9] }, then: 'September' },
+//                 { case: { $eq: ['$_id', 10] }, then: 'October' },
+//                 { case: { $eq: ['$_id', 11] }, then: 'November' },
+//                 { case: { $eq: ['$_id', 12] }, then: 'December' },
+//               ],
+//               default: 'Unknown', // Default value in case month is not valid
+//             },
+//           },
+//         },
+//       },
+//       { $sort: { _id: 1 } }, // Sort by month (ascending)
+//     ]);
+
+//     const earningOverview = await Payment.aggregate([
+//   {
+//     $match: {
+//       createdAt: {
+//         $gte: new Date(`${year}-01-01`),
+//         $lt: new Date(`${year + 1}-01-01`),
+//       },
+//     },
+//   },
+//   {
+//     $group: {
+//       _id: { $month: '$createdAt' },
+//       totalAmount: { $sum: '$amount' },  // sum amount here
+//     },
+//   },
+//   {
+//     $project: {
+//       _id: 1,
+//       totalAmount: 1,
+//       monthName: {
+//         $switch: {
+//           branches: [
+//             { case: { $eq: ['$_id', 1] }, then: 'January' },
+//             { case: { $eq: ['$_id', 2] }, then: 'February' },
+//             { case: { $eq: ['$_id', 3] }, then: 'March' },
+//             { case: { $eq: ['$_id', 4] }, then: 'April' },
+//             { case: { $eq: ['$_id', 5] }, then: 'May' },
+//             { case: { $eq: ['$_id', 6] }, then: 'June' },
+//             { case: { $eq: ['$_id', 7] }, then: 'July' },
+//             { case: { $eq: ['$_id', 8] }, then: 'August' },
+//             { case: { $eq: ['$_id', 9] }, then: 'September' },
+//             { case: { $eq: ['$_id', 10] }, then: 'October' },
+//             { case: { $eq: ['$_id', 11] }, then: 'November' },
+//             { case: { $eq: ['$_id', 12] }, then: 'December' },
+//           ],
+//           default: 'Unknown',
+//         },
+//       },
+//     },
+//   },
+//   { $sort: { _id: 1 } },
+// ]);
+
+//     // Fetch recent users
+//     const recentUsers = await User.find({ _id: { $ne: userId } })
+//       .sort({ createdAt: -1 })
+//       .limit(6);
+
+//     return {
+//       totalUsers,
+//       totalEarnings,
+//       earningOverview,
+//       userOverview, // Includes month names with user counts
+//       recentUsers,
+//     };
+//   } catch (error) {
+//     console.error('Error fetching dashboard overview:', error);
+//     throw new Error('Error fetching dashboard data.');
+//   }
+// };
+
+
+
+const getUsersOverview = async (userId: string, year: number) => {
+  try {
+    const startDate = new Date(`${year}-01-01`);
+    const endDate = new Date(`${year + 1}-01-01`);
+
+    // Run independent queries in parallel for better performance
+    const [
+      totalUsers,
+      totalEarningsResult,
+      userOverview,
+      earningOverview,
+      recentUsers,
+    ] = await Promise.all([
+      User.countDocuments(),
+
+      Payment.aggregate([
+        { $group: { _id: null, totalAmount: { $sum: '$amount' } } },
+      ]),
+
+      User.aggregate([
+        { $match: { createdAt: { $gte: startDate, $lt: endDate } } },
+        { $group: { _id: { $month: '$createdAt' }, count: { $sum: 1 } } },
+        { $project: { _id: 1, count: 1, monthName: monthNameSwitch } },
+        { $sort: { _id: 1 } },
+      ]),
+
+      Payment.aggregate([
+        { $match: { createdAt: { $gte: startDate, $lt: endDate } } },
+        { $group: { _id: { $month: '$createdAt' }, totalAmount: { $sum: '$amount' } } },
+        { $project: { _id: 1, totalAmount: 1, monthName: monthNameSwitch } },
+        { $sort: { _id: 1 } },
+      ]),
+
+      User.find({ _id: { $ne: userId } })
+        .sort({ createdAt: -1 })
+        .limit(6)
+        .lean(),
     ]);
 
-    // Fetch recent users
-    const recentUsers = await User.find({ _id: { $ne: userId } })
-      .sort({ createdAt: -1 })
-      .limit(6);
+    const totalEarnings = totalEarningsResult.length > 0 ? totalEarningsResult[0].totalAmount : 0;
 
     return {
       totalUsers,
-      userOverview, // Includes month names with user counts
+      totalEarnings,
+      userOverview,
+      earningOverview,
       recentUsers,
     };
   } catch (error) {
@@ -419,33 +552,52 @@ const deleteMyAccount = async (id: string, payload: DeleteAccountPayload) => {
   return userDeleted;
 };
 
-const blockedUser = async (id: string) => {
+const blockUser = async (id: string) => {
   const singleUser = await User.IsUserExistById(id);
 
   if (!singleUser) {
     throw new AppError(httpStatus.NOT_FOUND, 'User not found');
   }
 
-  // let status;
+  if (singleUser.isBlocked) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'User is already blocked');
+  }
 
-  // if (singleUser?.isActive) {
-  //   status = false;
-  // } else {
-  //   status = true;
-  // }
-  let status = !singleUser.isBlocked;
-  console.log('status', status);
   const user = await User.findByIdAndUpdate(
     id,
-    { isBlocked: status },
+    { isBlocked: true }, // Assuming you want to block the user here
     { new: true },
   );
 
   if (!user) {
-    throw new AppError(httpStatus.BAD_REQUEST, 'user deleting failed');
+    throw new AppError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to block the user');
   }
 
-  return { status, user };
+  return user;
+};
+
+const unblockUser = async (id: string) => {
+  const singleUser = await User.IsUserExistById(id);
+
+  if (!singleUser) {
+    throw new AppError(httpStatus.NOT_FOUND, 'User not found');
+  }
+
+  if (!singleUser.isBlocked) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'User is already unblocked');
+  }
+
+  const user = await User.findByIdAndUpdate(
+    id,
+    { isBlocked: false }, // Assuming you want to block the user here
+    { new: true },
+  );
+
+  if (!user) {
+    throw new AppError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to block the user');
+  }
+
+  return;
 };
 
 export const userService = {
@@ -460,7 +612,8 @@ export const userService = {
   getUserByEmail,
   updateUser,
   deleteMyAccount,
-  blockedUser,
+  blockUser,
+  unblockUser,
   getAllUserQuery,
   getAllUserCount,
   getUsersOverview,

@@ -3,6 +3,10 @@ import Payment from '../payment/payment.model';
 import { Ticket } from './ticket.model';
 import { BuyTicketInput } from './ticket.interface';
 import { Types } from 'mongoose';
+import AppError from '../../error/AppError';
+import Notification from '../notifications/notifications.model';
+import { getAdminId } from '../../DB/adminStore';
+import { emitNotification } from '../../../socketIo';
 
 
 const buyTicket = async (data: BuyTicketInput) => {
@@ -35,6 +39,16 @@ const buyTicket = async (data: BuyTicketInput) => {
     await session.commitTransaction();
     session.endSession();
 
+    const updatePayment = await Payment.findByIdAndUpdate(newPayment[0]._id, {ticketId: newTicket[0]._id}, {new: true})
+
+
+    const adminId = getAdminId()
+
+   emitNotification( {userId: data.userId, 
+      receiverId: adminId, 
+      message: `${data.fullName} bought a ticket`,
+      type: 'buyTicket',})
+
     return newTicket[0];
   } catch (error) {
     await session.abortTransaction();
@@ -47,12 +61,26 @@ const getUserTickets = async (userId: Types.ObjectId | string) => {
   const tickets = await Ticket.find({ userId })
     .populate('eventId')   // Optional: populate event info
     .populate('paymentId') // Optional: populate payment info
+    .populate("category")
     .sort({ createdAt: -1 }); // Newest first
 
   return tickets || [];
 };
 
+const getTicketById = async (ticketId: string) => {
+  if (!ticketId) throw new AppError(httpStatus.BAD_REQUEST, "Ticket ID is required");
+
+  const ticket = await Ticket.findById(ticketId).lean();
+
+  if (!ticket) {
+    throw new AppError(httpStatus.NOT_FOUND, "Ticket not found");
+  }
+
+  return ticket;
+};
+
 export const ticketServices = {
   buyTicket,
-  getUserTickets
+  getUserTickets,
+  getTicketById
 };

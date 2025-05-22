@@ -191,13 +191,23 @@ const updateMyProfile = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const blockedUser = catchAsync(async (req: Request, res: Response) => {
-  const result = await userService.blockedUser(req.params.id);
+const blockUser = catchAsync(async (req: Request, res: Response) => {
+  const result = await userService.blockUser(req.params.id);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: `User ${result.status ? 'blocked' : 'unBlocked'} successfully`,
-    data: result.user,
+    message: `User blocked  successfully`,
+    data: null,
+  });
+});
+
+const unblockUser = catchAsync(async (req: Request, res: Response) => {
+  const result = await userService.unblockUser(req.params.id);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: `User unblocked  successfully`,
+    data: null,
   });
 });
 
@@ -221,7 +231,8 @@ export const userController = {
   getMyProfile,
   getAdminProfile,
   updateMyProfile,
-  blockedUser,
+  blockUser,
+  unblockUser,
   deleteMyAccount,
   getAllUsers,
   getAllUsersOverview,

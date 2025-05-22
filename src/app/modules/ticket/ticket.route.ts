@@ -16,3 +16,8 @@ ticketRoutes
     auth("user"),
     ticketController.getUserTickets
 )
+
+.get(
+    "/:ticketId",
+    auth("")
+)

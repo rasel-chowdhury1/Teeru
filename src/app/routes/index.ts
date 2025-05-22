@@ -8,6 +8,7 @@ import { categoryRoutes } from "../modules/category/category.route";
 import { eventRoutes } from "../modules/event/event.route";
 import { reviewRoutes } from "../modules/review/review.route";
 import { ticketRoutes } from "../modules/ticket/ticket.route";
+import { paymentRoutes } from "../modules/payment/payment.route";
 
 const router = Router();
 
@@ -48,6 +49,10 @@ const moduleRoutes = [
 {
   path: "/ticket",
   route: ticketRoutes
+},
+{
+  path: "/earnings",
+  route: paymentRoutes
 }
 ];
 
