@@ -59,9 +59,13 @@ const buyTicket = async (data: BuyTicketInput) => {
 
 const getUserTickets = async (userId: Types.ObjectId | string) => {
   const tickets = await Ticket.find({ userId })
-    .populate('eventId')   // Optional: populate event info
+    .populate({
+      path: 'eventId',
+      populate: {
+        path: "category"
+      }
+    })   // Optional: populate event info
     .populate('paymentId') // Optional: populate payment info
-    .populate("category")
     .sort({ createdAt: -1 }); // Newest first
 
   return tickets || [];
