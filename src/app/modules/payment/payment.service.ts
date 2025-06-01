@@ -14,7 +14,7 @@ const getPayments = async (filter: Record<string, any>, options: { page: number;
   const payments = await Payment.find(filter)
     .skip(skip)
     .limit(limit)
-    .populate('user_id', 'fullName email') // Populate user details
+    .populate('user_id', 'fullName email profileImage') // Populate user details
     .populate({
     path: 'ticketId',
     populate: {
