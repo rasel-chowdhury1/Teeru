@@ -1,0 +1,39 @@
+name: Deploy Backend to Hostinger Droplet
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build TypeScript
+        run: npm run build
+
+      - name: Deploy to Hostinger VPS
+        uses: appleboy/ssh-action@v0.1.9
+        with:
+          host: ${{ secrets.HOSTINGER_HOST }}
+          username: ${{ secrets.HOSTINGER_USER }}
+          key: ${{ secrets.HOSTINGER_SSH_KEY }}
+          port: 22
+          script: |
+            cd /applications/Teeru
+            git pull origin main || echo "git pull failed"
+            npm install --production
+            npm run build
+            pm2 restart teru || pm2 start dist/server.js --name teru
