@@ -350,31 +350,24 @@ const getUsersOverview = async (userId: string, year: number) => {
 
     const totalEarnings = totalEarningsResult.length > 0 ? totalEarningsResult[0].totalAmount : 0;
 
-    const userOverview = Array.from({ length: 12 }, (_, i) => {
+    // Build unified overview
+    const monthlyOverview = Array.from({ length: 12 }, (_, i) => {
       const month = i + 1;
-      const data = userOverviewRaw.find(item => item._id === month);
-      return {
-        _id: month,
-        count: data ? data.count : 0,
-        monthName: monthNames[month],
-      };
-    });
+      const userData = userOverviewRaw.find(item => item._id === month);
+      const earningData = earningOverviewRaw.find(item => item._id === month);
 
-    const earningOverview = Array.from({ length: 12 }, (_, i) => {
-      const month = i + 1;
-      const data = earningOverviewRaw.find(item => item._id === month);
       return {
-        _id: month,
-        totalAmount: data ? data.totalAmount : 0,
+        month,
         monthName: monthNames[month],
+        userCount: userData ? userData.count : 0,
+        totalEarnings: earningData ? earningData.totalAmount : 0,
       };
     });
 
     return {
       totalUsers,
       totalEarnings,
-      userOverview,
-      earningOverview,
+      monthlyOverview, // one array for both user and earning stats
       recentUsers,
     };
   } catch (error) {
@@ -382,6 +375,7 @@ const getUsersOverview = async (userId: string, year: number) => {
     throw new Error('Error fetching dashboard data.');
   }
 };
+
 
 
 // const getUsersOverview = async (userId: string, year: any) => {
