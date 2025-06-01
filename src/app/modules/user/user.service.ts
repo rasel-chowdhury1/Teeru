@@ -307,6 +307,83 @@ const getAllUserCount = async () => {
   return allUserCount;
 };
 
+const getUsersOverview = async (userId: string, year: number) => {
+  try {
+    const startDate = new Date(`${year}-01-01`);
+    const endDate = new Date(`${year + 1}-01-01`);
+
+    const monthNames = [
+      '', 'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December',
+    ];
+
+    const [
+      totalUsers,
+      totalEarningsResult,
+      userOverviewRaw,
+      earningOverviewRaw,
+      recentUsers,
+    ] = await Promise.all([
+      User.countDocuments(),
+
+      Payment.aggregate([
+        { $group: { _id: null, totalAmount: { $sum: '$amount' } } },
+      ]),
+
+      User.aggregate([
+        { $match: { createdAt: { $gte: startDate, $lt: endDate } } },
+        { $group: { _id: { $month: '$createdAt' }, count: { $sum: 1 } } },
+        { $sort: { _id: 1 } },
+      ]),
+
+      Payment.aggregate([
+        { $match: { createdAt: { $gte: startDate, $lt: endDate } } },
+        { $group: { _id: { $month: '$createdAt' }, totalAmount: { $sum: '$amount' } } },
+        { $sort: { _id: 1 } },
+      ]),
+
+      User.find({ _id: { $ne: userId } })
+        .sort({ createdAt: -1 })
+        .limit(6)
+        .lean(),
+    ]);
+
+    const totalEarnings = totalEarningsResult.length > 0 ? totalEarningsResult[0].totalAmount : 0;
+
+    const userOverview = Array.from({ length: 12 }, (_, i) => {
+      const month = i + 1;
+      const data = userOverviewRaw.find(item => item._id === month);
+      return {
+        _id: month,
+        count: data ? data.count : 0,
+        monthName: monthNames[month],
+      };
+    });
+
+    const earningOverview = Array.from({ length: 12 }, (_, i) => {
+      const month = i + 1;
+      const data = earningOverviewRaw.find(item => item._id === month);
+      return {
+        _id: month,
+        totalAmount: data ? data.totalAmount : 0,
+        monthName: monthNames[month],
+      };
+    });
+
+    return {
+      totalUsers,
+      totalEarnings,
+      userOverview,
+      earningOverview,
+      recentUsers,
+    };
+  } catch (error) {
+    console.error('Error fetching dashboard overview:', error);
+    throw new Error('Error fetching dashboard data.');
+  }
+};
+
+
 // const getUsersOverview = async (userId: string, year: any) => {
 //   try {
 //     // Fetch total user count
@@ -431,59 +508,59 @@ const getAllUserCount = async () => {
 
 
 
-const getUsersOverview = async (userId: string, year: number) => {
-  try {
-    const startDate = new Date(`${year}-01-01`);
-    const endDate = new Date(`${year + 1}-01-01`);
+// const getUsersOverview = async (userId: string, year: number) => {
+//   try {
+//     const startDate = new Date(`${year}-01-01`);
+//     const endDate = new Date(`${year + 1}-01-01`);
 
-    // Run independent queries in parallel for better performance
-    const [
-      totalUsers,
-      totalEarningsResult,
-      userOverview,
-      earningOverview,
-      recentUsers,
-    ] = await Promise.all([
-      User.countDocuments(),
+//     // Run independent queries in parallel for better performance
+//     const [
+//       totalUsers,
+//       totalEarningsResult,
+//       userOverview,
+//       earningOverview,
+//       recentUsers,
+//     ] = await Promise.all([
+//       User.countDocuments(),
 
-      Payment.aggregate([
-        { $group: { _id: null, totalAmount: { $sum: '$amount' } } },
-      ]),
+//       Payment.aggregate([
+//         { $group: { _id: null, totalAmount: { $sum: '$amount' } } },
+//       ]),
 
-      User.aggregate([
-        { $match: { createdAt: { $gte: startDate, $lt: endDate } } },
-        { $group: { _id: { $month: '$createdAt' }, count: { $sum: 1 } } },
-        { $project: { _id: 1, count: 1, monthName: monthNameSwitch } },
-        { $sort: { _id: 1 } },
-      ]),
+//       User.aggregate([
+//         { $match: { createdAt: { $gte: startDate, $lt: endDate } } },
+//         { $group: { _id: { $month: '$createdAt' }, count: { $sum: 1 } } },
+//         { $project: { _id: 1, count: 1, monthName: monthNameSwitch } },
+//         { $sort: { _id: 1 } },
+//       ]),
 
-      Payment.aggregate([
-        { $match: { createdAt: { $gte: startDate, $lt: endDate } } },
-        { $group: { _id: { $month: '$createdAt' }, totalAmount: { $sum: '$amount' } } },
-        { $project: { _id: 1, totalAmount: 1, monthName: monthNameSwitch } },
-        { $sort: { _id: 1 } },
-      ]),
+//       Payment.aggregate([
+//         { $match: { createdAt: { $gte: startDate, $lt: endDate } } },
+//         { $group: { _id: { $month: '$createdAt' }, totalAmount: { $sum: '$amount' } } },
+//         { $project: { _id: 1, totalAmount: 1, monthName: monthNameSwitch } },
+//         { $sort: { _id: 1 } },
+//       ]),
 
-      User.find({ _id: { $ne: userId } })
-        .sort({ createdAt: -1 })
-        .limit(6)
-        .lean(),
-    ]);
+//       User.find({ _id: { $ne: userId } })
+//         .sort({ createdAt: -1 })
+//         .limit(6)
+//         .lean(),
+//     ]);
 
-    const totalEarnings = totalEarningsResult.length > 0 ? totalEarningsResult[0].totalAmount : 0;
+//     const totalEarnings = totalEarningsResult.length > 0 ? totalEarningsResult[0].totalAmount : 0;
 
-    return {
-      totalUsers,
-      totalEarnings,
-      userOverview,
-      earningOverview,
-      recentUsers,
-    };
-  } catch (error) {
-    console.error('Error fetching dashboard overview:', error);
-    throw new Error('Error fetching dashboard data.');
-  }
-};
+//     return {
+//       totalUsers,
+//       totalEarnings,
+//       userOverview,
+//       earningOverview,
+//       recentUsers,
+//     };
+//   } catch (error) {
+//     console.error('Error fetching dashboard overview:', error);
+//     throw new Error('Error fetching dashboard data.');
+//   }
+// };
 
 const getUserById = async (id: string) => {
   const result = await User.findById(id);
